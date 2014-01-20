@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<project name="Ant-Test" default="war" basedir=".">
+
+	<property file="build.properties" />
+
+	<path id="build.classpath">
+		<fileset dir="lib">
+			<include name="servlet-api.jar" />
+		</fileset>
+	</path>
+
+	<path id="junit.class.path">
+		<pathelement location="lib/junit.jar" />
+		<pathelement location="${build.dir}/classes" />
+	</path>
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="makedir">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.dir}/classes" />
+		<mkdir dir="${build.dir}/jars" />
+	</target>
+
+	<target name="compile" depends="clean, makedir">
+		<javac srcdir="${src.dir}" destdir="${build.dir}/classes" classpathref="build.classpath" />
+	</target>
+
+
+	<target name="compiletests" depends="compile">
+		<javac srcdir="${test.dir}" destdir="${build.dir}/classes" classpathref="junit.class.path" />
+	</target>
+
+	<target name="runtests" depends="compiletests">
+		<junit printsummary="yes" fork="yes" haltonfailure="yes">
+			<classpath refid="junit.class.path" />
+			<test name="com.bit.bo.LoginValidatorBOTest" />
+		</junit>
+	</target>
+
+	<target name="jar" depends="compile,runtests">
+		<jar destfile="${build.dir}/jars/${project.name}.jar" basedir="${build.dir}/classes" />
+	</target>
+
+	<target name="war" depends="jar">
+		<war destfile="${build.dir}/${project.name}.war" webxml="web.xml">
+			<fileset dir="html" />
+			<lib dir="${build.dir}/jars" />
+		</war>
+	</target>
+
+	<target name="deploy" depends="war">
+		<copy file="${build.dir}/${project.name}.war" todir="${tomcat.home}/webapps" />
+	</target>
+
+</project>
